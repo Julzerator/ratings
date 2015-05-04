@@ -6,6 +6,19 @@ from server import app
 
 def load_users():
     """Load users from u.user into database."""
+    filepath = "./seed_data/u.user"
+    users = open(filepath)
+
+
+    for user in users:
+        user = user.rstrip().split('|')
+        db_user = User(user_id=user[0], age=user[1], zipcode=user[4])
+        db.session.add(db_user)
+
+    db.session.commit()
+
+ 
+
 
 
 def load_movies():
