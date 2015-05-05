@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+  <title>Ratings</title>
+</head>
+
+<body>
+  Ratings
+  <hr>
+
+   {% for message in get_flashed_messages() %}
+            <li>{{ message }}</li>
+        {% endfor %}
+
+  {% block content %} put your content here {% endblock %}
+
+<div name="login_logout"><a href="/to_login">Click here to login</a></div>
+<a href="/logout">Click here to logout</a>
+
+</body>
+</html>
