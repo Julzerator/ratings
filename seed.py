@@ -25,7 +25,7 @@ def load_movies():
 
     for movie in movies:
         movie = movie.rstrip().split('|')
-        title = movie[1][:-6]
+        title = movie[1][:-7]
         title = title.decode("latin-1")
         if movie[2]:
             date = datetime.strptime(movie[2], '%d-%b-%Y')
