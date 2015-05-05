@@ -69,6 +69,33 @@ def logout():
     flash("You have successfully logged out.")
     return redirect("/")
 
+@app.route('/to_signup')
+def to_signup():
+    return render_template("subscribe.html")
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    """Adds a new user to the Users table"""
+
+    email = request.form["email_input"]
+    password = request.form["password_input"]
+    age = request.form["age_input"]
+    zipcode = request.form["zipcode_input"]
+
+    new_user = User(email = email,
+                    password = password,
+                    age = age,
+                    zipcode = zipcode)
+
+    db.session.add(new_user)   
+    # db.session.flush()
+    db.session.commit()
+
+    flash("Thank you for signing up for Judgemental Eye!")
+
+    return render_template("login.html", email= email, password=password)
+
+
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point

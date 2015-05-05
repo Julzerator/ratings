@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h1>Sign Up Page</h1>
+
+<p>Sign up for your account with Judgmental Eye!</p>
+
+<form action="/signup" method="POST">
+    Login Email:<br>
+    <input type="text" name="email_input"><br>
+    Password:<br>
+    <input type="password" name="password_input"><br>
+    Age:<br>
+    <input type="number" name="age_input"><br>
+    Zipcode:<br>
+    <input type="text" name="zipcode_input"><br>
+    <br>
+    <input type="submit" value="Sign Up">
+</form>
+
+
+{% endblock %}
