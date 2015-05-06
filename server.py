@@ -33,6 +33,24 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
+@app.route('/user_profile/<int:user_id>')
+def user_details(user_id):
+    """Displays the details of a user profile"""
+
+    user = User.query.filter_by(user_id = user_id).one()
+    user_ratings = db.session.query(User, Rating).join(Rating).filter(user_id=user_id).all()
+    print "this is the user ratings", user_ratings 
+    # users_movies = db.session.query(Movie.title, Rating.score).join(Rating)
+    # usertest = user_ratings.all()
+    
+
+    # for title, score in user_ratings.all():
+    #     print 
+
+
+    # print "This is the user:", user
+    return render_template("user_details.html", user=user)
+
 @app.route('/to_login')
 def to_login():
     """Takes the user to the login page"""
@@ -47,7 +65,21 @@ def login():
     email = request.form["email_input"]
     password = request.form["password_input"]
 
-    user = User.query.filter_by(email=email, password=password).one()
+
+    print '*'*30
+    print "this is my email", email
+    print "this is my password", password
+
+    
+    user = User.query.filter_by(email=email, password=password).first()
+    print "I'm a user", user
+    
+    # If email/password combo is not found?
+
+    if user == None:
+        flash( """Hey there! That email and/or password is not in our database. 
+            Try again? Or signup!""")
+        return redirect('/to_login')
 
     if 'user_id' in session:
         session['user_id'] = user.user_id
@@ -82,16 +114,23 @@ def signup():
     age = request.form["age_input"]
     zipcode = request.form["zipcode_input"]
 
-    new_user = User(email = email,
+    # If there is already a user with that email?
+
+    if User(email=email):
+        flash("Woah there buddy. That email is taken. Sorry :( ")
+        flash("Did you mean to log in instead?")
+
+    else:
+        new_user = User(email = email,
                     password = password,
                     age = age,
                     zipcode = zipcode)
 
-    db.session.add(new_user)   
-    # db.session.flush()
-    db.session.commit()
+        db.session.add(new_user)   
 
-    flash("Thank you for signing up for Judgemental Eye!")
+        db.session.commit()
+
+        flash("Thank you for signing up for Judgemental Eye!")
 
     return render_template("login.html", email= email, password=password)
 
