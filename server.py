@@ -38,32 +38,36 @@ def user_details(user_id):
     """Displays the details of a user profile"""
 
     user = User.query.filter_by(user_id = user_id).one()
-    user_ratings = Rating.query.filter_by(user_id = user_id).all()
-    # user_ratings = db.session.query(User, Rating).join(Rating).filter(
-    #     User.user_id==user_id).all()
-    user_movies = []
-    for rating in user_ratings:
-        movie_id = rating.movie_id
-        score = rating.score
-        movie_title = Movie.query.filter_by(movie_id = movie_id).one()
-        movie_title = movie_title.title
-        rating_tuple = (movie_title, score)
-        user_movies.append(rating_tuple)
 
-    # user_movies = db.session.query(Rating, Movie).join(Movie).filter(
-    #     Rating.movie_id == user_ratings.movie_id).all()
-    print "this is the user ratings", user_ratings 
-    print "these are our movie titles", user_movies
-    # users_movies = db.session.query(Movie.title, Rating.score).join(Rating)
-    # usertest = user_ratings.all()
+    #Must have our joined query before we can filter things out of our query.
+    user_movies = db.session.query(Movie.title, Rating.score, Movie.movie_id).join(Rating)
+    user_movies = user_movies.filter(Rating.user_id == user.user_id)
+
     
-
-    # for title, score in user_ratings.all():
-    #     print 
-
-
-    # print "This is the user:", user
     return render_template("user_details.html", user=user, user_movies=user_movies)
+
+
+@app.route('/movies')
+def movie_list():
+    """Displaying a list of all movies"""
+
+    movies = Movie.query.order_by(Movie.title).all()
+    return render_template("movie_list.html", movies=movies)
+
+
+@app.route('/movie_details/<int:movie_id>')
+def movie_details(movie_id):
+    """Displays the details of a movie"""
+
+    movie = Movie.query.filter_by(movie_id = movie_id).one()
+
+    movie_ratings = db.session.query(Rating.score, User.user_id, User.email).join(User)
+    movie_ratings = movie_ratings.filter(Rating.movie_id == movie.movie_id)
+
+    print "These are our ratings ", movie_ratings
+    
+    return render_template("movie_details.html", movie=movie, movie_ratings=movie_ratings)
+
 
 @app.route('/to_login')
 def to_login():
@@ -161,3 +165,8 @@ if __name__ == "__main__":
     DebugToolbarExtension(app)
 
     app.run()
+
+
+# ******* NOTES *******
+
+# We removed from our database movie_id = 267
