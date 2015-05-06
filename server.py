@@ -38,8 +38,22 @@ def user_details(user_id):
     """Displays the details of a user profile"""
 
     user = User.query.filter_by(user_id = user_id).one()
-    user_ratings = db.session.query(User, Rating).join(Rating).filter(user_id=user_id).all()
+    user_ratings = Rating.query.filter_by(user_id = user_id).all()
+    # user_ratings = db.session.query(User, Rating).join(Rating).filter(
+    #     User.user_id==user_id).all()
+    user_movies = []
+    for rating in user_ratings:
+        movie_id = rating.movie_id
+        score = rating.score
+        movie_title = Movie.query.filter_by(movie_id = movie_id).one()
+        movie_title = movie_title.title
+        rating_tuple = (movie_title, score)
+        user_movies.append(rating_tuple)
+
+    # user_movies = db.session.query(Rating, Movie).join(Movie).filter(
+    #     Rating.movie_id == user_ratings.movie_id).all()
     print "this is the user ratings", user_ratings 
+    print "these are our movie titles", user_movies
     # users_movies = db.session.query(Movie.title, Rating.score).join(Rating)
     # usertest = user_ratings.all()
     
@@ -49,7 +63,7 @@ def user_details(user_id):
 
 
     # print "This is the user:", user
-    return render_template("user_details.html", user=user)
+    return render_template("user_details.html", user=user, user_movies=user_movies)
 
 @app.route('/to_login')
 def to_login():

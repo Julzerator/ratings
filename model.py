@@ -63,7 +63,7 @@ class Rating(db.Model):
     def __repr__(self):
         """Provide helpful movie, rating and user representation when printed"""
 
-        return "Rating rating_id=%s movie_id=%s user_id=%s score=%s>" % (
+        return "<Rating rating_id=%s movie_id=%s user_id=%s score=%s>" % (
             self.rating_id, self.movie_id, self.user_id, self.score )
 
 ##############################################################################

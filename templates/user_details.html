@@ -10,7 +10,15 @@
     </div>
     <div name="scored_movies">
     <ul>
-
+      {% for title, score in user_movies %}
+        <li>
+            <a href="/user_profile/{{ user.user_id }}">
+              
+              {{ title }} ({{ score }})
+             
+            </a>
+        </li>
+      {% endfor %}
     </ul>
     </div>
 
