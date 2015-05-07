@@ -77,37 +77,31 @@ def rate_movie(movie_id):
     score = request.form["score_input"]
     #we have score, movie_id from router and user_id from session
 
-    print "This is where we check out session ", session
-    user_id = session['user_id']
-    print "This is our user_id ", user_id
+    print "*"*30, session
 
+    if session != {}:
+        user_id = session['user_id']
 
-    # WE HAVE A PROBLEM HERE!!!! WE'LL DEAL WITH THIS TOMORROW. 
-    rating = Rating.query.filter_by(movie_id, user_id).first() 
+        rating = Rating.query.filter_by(movie_id=movie_id, user_id=user_id).first() 
 
-    new_rating = Rating(movie_id = movie_id,
-                        user_id = user_id,
-                        score = score)
-
-    if session:
+        new_rating = Rating(movie_id = movie_id,
+                            user_id = user_id,
+                            score = score)
         if rating == None:
-            # insert innto moview score in rating
 
             db.session.add(new_rating)   
-
             db.session.commit()
-
             flash("Thank you for rating this movie!")
         else:
-            # update movie score in ratings into db 
-            updated_rating = update(Rating).where(user_id=user_id).value(score= score)
 
-            db.session.add(updated_rating)
+            rating.score = score
 
             db.session.commit()
 
+        return redirect('/movie_details/%d' % movie_id)
 
-    else:
+
+    elif session == {}:
         flash ("""Hey there, looks like you aren't logged in at the moment. 
             To rate a movie, please log in""") 
         return redirect("/to_login")
@@ -165,14 +159,21 @@ def to_signup():
 def signup():
     """Adds a new user to the Users table"""
 
+
+
     email = request.form["email_input"]
     password = request.form["password_input"]
     age = request.form["age_input"]
     zipcode = request.form["zipcode_input"]
 
+    user = User.query.filter_by(email=email).first()
     # If there is already a user with that email?
 
-    if User(email=email):
+
+    # WE HAVE A PROBLEM HERE. WANT TO SIGN USER UP IF NO EMAIL IN DB. FOR HEATHER'S THERE IS NO EMAIL
+    # STILL GIVING US AN ERROR....
+
+    if user == None:
         flash("Woah there buddy. That email is taken. Sorry :( ")
         flash("Did you mean to log in instead?")
 
