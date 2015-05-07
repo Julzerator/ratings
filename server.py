@@ -69,6 +69,50 @@ def movie_details(movie_id):
     return render_template("movie_details.html", movie=movie, movie_ratings=movie_ratings)
 
 
+
+@app.route('/rate_movie/<int:movie_id>', methods=['POST'])
+def rate_movie(movie_id):
+    """Insert or Update user input if user is logged in, otherwise show login alert."""
+
+    score = request.form["score_input"]
+    #we have score, movie_id from router and user_id from session
+
+    print "This is where we check out session ", session
+    user_id = session['user_id']
+    print "This is our user_id ", user_id
+
+
+    # WE HAVE A PROBLEM HERE!!!! WE'LL DEAL WITH THIS TOMORROW. 
+    rating = Rating.query.filter_by(movie_id, user_id).first() 
+
+    new_rating = Rating(movie_id = movie_id,
+                        user_id = user_id,
+                        score = score)
+
+    if session:
+        if rating == None:
+            # insert innto moview score in rating
+
+            db.session.add(new_rating)   
+
+            db.session.commit()
+
+            flash("Thank you for rating this movie!")
+        else:
+            # update movie score in ratings into db 
+            updated_rating = update(Rating).where(user_id=user_id).value(score= score)
+
+            db.session.add(updated_rating)
+
+            db.session.commit()
+
+
+    else:
+        flash ("""Hey there, looks like you aren't logged in at the moment. 
+            To rate a movie, please log in""") 
+        return redirect("/to_login")
+
+
 @app.route('/to_login')
 def to_login():
     """Takes the user to the login page"""
@@ -83,14 +127,8 @@ def login():
     email = request.form["email_input"]
     password = request.form["password_input"]
 
-
-    print '*'*30
-    print "this is my email", email
-    print "this is my password", password
-
     
     user = User.query.filter_by(email=email, password=password).first()
-    print "I'm a user", user
     
     # If email/password combo is not found?
 

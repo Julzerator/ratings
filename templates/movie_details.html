@@ -10,6 +10,13 @@
                     {{ movie.imdb_url }} 
                   </a><br>
     </div>
+    <div name="rate_movie">
+      <form action="/rate_movie/{{ movie.movie_id }}" method="POST">
+        Rate this movie: <input type="number" name="score_input" required>
+        <br>
+        <input type="submit" value="Submit">
+      </form>
+    </div>
     <div name="scored_movies">
     <ul>
       {% for score, user_id, email in movie_ratings %}
@@ -21,6 +28,7 @@
             </a>
         </li>
       {% endfor %}
+
     </ul>
     </div>
 
