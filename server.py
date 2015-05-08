@@ -25,6 +25,7 @@ def index():
 
     return render_template("homepage.html")
 
+
 @app.route('/users')
 def user_list():
     """Displaying a list of all users"""
@@ -59,14 +60,97 @@ def movie_list():
 def movie_details(movie_id):
     """Displays the details of a movie"""
 
-    movie = Movie.query.filter_by(movie_id = movie_id).one()
+    movie = Movie.query.get(movie_id)
 
+    user_id = session.get("user_id")
+
+    # Determine if a user is logged in, and if they have rated this
+    if user_id:
+        user_rating = Rating.query.filter_by(
+            movie_id=movie_id, user_id=user_id).first()
+
+    else:
+        user_rating = None
+
+    # Get average rating of movie
+
+    rating_scores = [r.score for r in movie.ratings]
+    avg_rating = float(sum(rating_scores)) / len(rating_scores)
+
+    prediction = None
+
+    # Prediction code: only predict if the user hasn't rated it.
+
+    if (not user_rating) and user_id:
+        user = User.query.get(user_id)
+        if user:
+            prediction = user.predict_rating(movie)
+
+    # Either use the prediction or their real rating
+
+    if prediction:
+        # User hasn't scored; use our prediction if we made one
+        effective_rating = prediction
+
+    elif user_rating:
+        # User has already scored for real; use that
+        effective_rating = user_rating.score
+
+    else:
+        # User hasn't scored, and we couldn't get a prediction
+        effective_rating = None
+
+    # Get the eye's rating, either by predicting or using real rating
+
+    the_eye = User.query.get(952)
+    eye_rating = Rating.query.filter_by(
+        user_id=the_eye.user_id, movie_id=movie.movie_id).first()
+
+    if eye_rating is None:
+        eye_rating = the_eye.predict_rating(movie)
+
+    else:
+        eye_rating = eye_rating.score
+
+    if eye_rating and effective_rating:
+        difference = abs(eye_rating - effective_rating)
+
+    else:
+        # We couldn't get an eye rating, so we'll skip difference
+        difference = None
+
+    # Depending on how different we are from the Eye, choose a message
+
+    BERATEMENT_MESSAGES = [
+        "I suppose you don't have such bad taste after all.",
+        "I regret every decision that I've ever made that has brought me" +
+            " to listen to your opinion.",
+        "Words fail me, as your taste in movies has clearly failed you.",
+        "That movie is great. For a clown to watch. Idiot.",
+        "Words cannot express the awfulness of your taste."
+    ]
+
+    if difference is not None:
+        beratement = BERATEMENT_MESSAGES[int(difference)]
+
+    else:
+        beratement = None
+
+    # This is where we list the movie_ratings:
     movie_ratings = db.session.query(Rating.score, User.user_id, User.email).join(User)
     movie_ratings = movie_ratings.filter(Rating.movie_id == movie.movie_id)
 
     print "These are our ratings ", movie_ratings
     
-    return render_template("movie_details.html", movie=movie, movie_ratings=movie_ratings)
+    return render_template("movie_details.html",
+        movie=movie, 
+        movie_ratings=movie_ratings,
+        user_rating=user_rating,
+        average=avg_rating,
+        prediction=prediction, 
+        beratement=beratement,
+        eye_rating=eye_rating
+        )
 
 
 
@@ -132,8 +216,13 @@ def login():
         return redirect('/to_login')
 
     if 'user_id' in session:
+        print "This is before login", session
+        del session['user_id']
+        print "This is after del", session
+
         session['user_id'] = user.user_id
-        flash("You are already logged in!") 
+        print "This is after login", session
+        flash("You are logged in!") 
     else:
         session['user_id'] = user.user_id
         flash("You have successfully logged in!")
@@ -141,6 +230,7 @@ def login():
     print "*"*30
     print "This is our current session", session
     return redirect("/")
+
 
 @app.route('/logout')
 def logout():
@@ -151,15 +241,15 @@ def logout():
     flash("You have successfully logged out.")
     return redirect("/")
 
+
 @app.route('/to_signup')
 def to_signup():
     return render_template("subscribe.html")
 
+
 @app.route('/signup', methods=['POST'])
 def signup():
     """Adds a new user to the Users table"""
-
-
 
     email = request.form["email_input"]
     password = request.form["password_input"]
@@ -169,11 +259,7 @@ def signup():
     user = User.query.filter_by(email=email).first()
     # If there is already a user with that email?
 
-
-    # WE HAVE A PROBLEM HERE. WANT TO SIGN USER UP IF NO EMAIL IN DB. FOR HEATHER'S THERE IS NO EMAIL
-    # STILL GIVING US AN ERROR....
-
-    if user == None:
+    if user != None:
         flash("Woah there buddy. That email is taken. Sorry :( ")
         flash("Did you mean to log in instead?")
 

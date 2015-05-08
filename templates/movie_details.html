@@ -9,7 +9,23 @@
       IMBD Link:  <a href="{{ movie.imdb_url}}">
                     {{ movie.imdb_url }} 
                   </a><br>
+      Average Rating: {{ average }}<br>
+      {% if user_rating %}
+        User Rating: {{ user_rating.score }}<br>
+
+          <div>
+            <h3>The Evil Eye</h3>
+            The Evil Eye's rating: {{eye_rating}}<br>
+            {% if beratement %}
+              {{ beratement }}
+            {% endif %}
+          </div>
+        
+      {% else %}
+        Prediction: {{ prediction }}<br>
+      {% endif %}
     </div>
+    
     <div name="rate_movie">
       <form action="/rate_movie/{{ movie.movie_id }}" method="POST">
         Rate this movie: <input type="number" name="score_input" required>
