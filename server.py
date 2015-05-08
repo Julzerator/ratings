@@ -236,6 +236,9 @@ def login():
 def logout():
     """Logs a user out of the site."""
     print "This is before logout", session
+    if session == {}:
+        flash("You are not logged in")
+        return redirect('/to_login')
     del session['user_id']
     print "This is after", session
     flash("You have successfully logged out.")
